@@ -1,4 +1,4 @@
-# cs471-Door-detection
-Computer Vision Projet
+# Door Detection
+Csc471-Computer Vision Projet
 
 
