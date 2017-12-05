@@ -1,0 +1,16 @@
+What does goodFeaturesToTrack do?
+
+Function calculates the corner quality measure at every source image pixel using the cornerMinEigenVal() or cornerHarris() .
+
+Function performs a non-maximum suppression (the local maximums in 3 x 3 neighborhood are retained).
+
+The corners with the minimal eigenvalue less than \texttt{qualityLevel} \cdot \max_{x,y} qualityMeasureMap(x,y) are rejected.
+
+The remaining corners are sorted by the quality measure in the descending order.
+
+Function throws away each corner for which there is a stronger corner at a distance less than maxDistance.
+
+TODO: breifly explain cornerMinEigenVal() & cornerHarris() and the rest 
+can just be pasted to the slides.
+
+
