@@ -14,3 +14,6 @@ TODO: breifly explain cornerMinEigenVal() & cornerHarris() and the rest
 can just be pasted to the slides.
 
 
+Notes on orientation are in FeatureExtraction pdf, pg. 26
+
+
