@@ -12,29 +12,40 @@ class door_detection:
         self.test_door = img_door
         self.gray_door = cv2.cvtColor(img_door, cv2.COLOR_BGR2GRAY)
         self.height, self.width, self.channels = self.img_door.shape
-
+        print img_door.shape
         self.upper_half = self.height/2
         self.lower_half = self.height
 
-        if self.height > 1024 and self.width > 768:
-            # if self.height > self.width:
-            self.img_door = cv2.resize(self.img_door, (1024, 768))
-            self.gray_door = cv2.cvtColor(self.img_door, cv2.COLOR_BGR2GRAY)
-            self.height, self.width, self.channels = self.img_door.shape
+        if self.height > self.width:
 
+            if self.height > 1024 and self.width > 768:
+                # if self.height > self.width:
+                self.img_door = cv2.resize(self.img_door, (1024, 768))
+                self.gray_door = cv2.cvtColor(self.img_door, cv2.COLOR_BGR2GRAY)
+                self.height, self.width, self.channels = self.img_door.shape
+
+        else:
+            if self.height > 1024 and self.width > 768:
+                self.img_door = cv2.resize(self.img_door, (738, 550))
+                self.gray_door = cv2.cvtColor(self.img_door, cv2.COLOR_BGR2GRAY)
+                self.height, self.width, self.channels = self.img_door.shape
     def draw_corners(self):
-        for line in self.line_coords:
+        for corner in self.corners_loc:
             #point one of line
-            x1 = line[0][0]
-            y1 = line[0][1]
+            #print corner
+            x1 = corner[0]#[0]
+            y1 = corner[1]#[1]
             #point 2 of line
-            x2 = line[1][0]
-            y2 = line[1][1]
-            print(line)
+            #x2 = line[1][0]
+            #y2 = line[1][1]
+
             cv2.circle(self.img_door, (x1, y1), 1, 255, 3)
-            cv2.circle(self.img_door, (x2, y2), 1, 255, 3)
+            #cv2.circle(self.img_door, (x2, y2), 1, 255, 3)
         return self.img_door
 
+    def draw_lines(self):
+        for line in self.line_coords:
+            pass
     def draw(self):
         for square in self.square_coords:
 
@@ -62,7 +73,7 @@ class door_detection:
             #draw rectangle
             pts = np.array([[x1,y1],[x2,y2], [x3, y3], [x4,y4] ] )
             cv2.fillPoly(self.img_door, pts = [pts], color =  (255,0,0))
-
+            #cv2.imshow('{}'.format(x1),self.img_door)
         return self.img_door
 
     def Corner_Detection(self):
@@ -93,6 +104,7 @@ class door_detection:
                         #check if corner coordinate is close to same y plane
                         if abs(x2 - x1) < 3 and [x1,y1] not in self.taken and [x2,y2] not in self.taken:
                             if abs(y2 - y1) > self.height /2: #don't draw short lines. Door i usually longest feature.
+                                #cv2.line(self.img_door, (x1, y1), (x2, y2), (1, 0, 255), 3)
                                 if y1 < self.height/2:# classify where the coordinate is relative to the image.
                                     self.line_coords.append(((x1,y1,'upper'),(x2,y2,'lower')))
                                 else:
@@ -112,13 +124,14 @@ class door_detection:
                         #check if corner coordinate is close to same y plane
 
                         if abs(y2 - y1) < 5 and [x1,y1] not in self.taken and [x2,y2] not in self.taken:
-                            if abs(x2 - x1) > self.width*.2 and abs(x2- x1) < self.width*.8 \
-                                    and x1 < self.width*.8 and x1 > self.width*.2\
-                                    and y1 > self.height*.1:
+                            if abs(x2 - x1) > self.width*.25 and abs(x2- x1) < self.width*.8 \
+                                    and x1 < self.width/3 and x1 > self.width*.2\
+                                    and y1 > self.height*.05 and y1 < self.height*.95  :
+                                #cv2.line(self.img_door, (x1, y1), (x2, y2), (1, 0, 255), 3)
                                 if x1 < self.width/2:# classify where the coordinate is relative to the image.
-                                    self.line_coords.append([[x1,y1,'left'],[x2,y2,'right']])
+                                    self.line_coords.append(((x1,y1,'left'),(x2,y2,'right')))
                                 else:
-                                   self.line_coords.append(([[x1,y1,'right'],[x2,y2,'left']]))
+                                   self.line_coords.append(((x1,y1,'right'),(x2,y2,'left')))
                                 #coordinates have been used once, don't use them again.
                                 self.taken.append([x1,y1])
                                 self.taken.append([x2,y2])
@@ -128,9 +141,9 @@ class door_detection:
     def draw_opposite_line(self):
         taken = []
         self.square_coords = []
+        self.line_coords = self.sort_x()
+        print(self.line_coords)
         if self.line_direction == 'V':
-            self.line_coords = self.sort_x()
-            print(self.line_coords)
             for corners in self.line_coords:
                 x1 = corners[0][0]
                 y1 = corners[0][1]
@@ -154,6 +167,7 @@ class door_detection:
                 y1 = corners[0][1]
                 x2 = corners[1][0]
                 y2 = corners[1][1]
+
                 for next_corner in self.line_coords:
                     X1 = next_corner[0][0]
                     Y1 = next_corner[0][1]
@@ -193,21 +207,23 @@ class door_detection:
         return sorted(self.line_coords, key = lambda x: x[0][0])
         #return sorted (self.line_coords[0][0])
 
-img_door = cv2.imread('room.jpeg')
+img_door = cv2.imread('door_image16.jpg')
 dt = door_detection(img_door)
 
 img_door = dt.Corner_Detection()
 
 #cv2.imshow('image', img_door)
+#img_door = dt.draw_corners()
 
+#cv2.imshow('corners',img_door)
 line_door = dt.find_lines()
 
-cv2.imshow('lines',img_door)
+#cv2.imshow('lines',img_door)
 #line_door = dt.draw_opposite_line()
 
 opposite_lines = dt.draw_opposite_line()
 
-cv2.imshow('opposite',opposite_lines)
+#cv2.imshow('opposite',opposite_lines)
 
 
 #corner_door = dt.draw_corners()
